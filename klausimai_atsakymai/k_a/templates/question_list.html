@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question List</title>
+</head>
+<body>
+    <h1>Question List</h1>
+    <ul>
+        {% for question in questions %}
+        <li>
+            <strong>Question:</strong> {{ question.text }}<br>
+            <strong>Asked by:</strong> {{ question.customer.username }}<br>
+            <strong>Answers:</strong>
+            <ul>
+                {% for answer in question.answer_set.all %}
+                <li>
+                    <strong>Answer:</strong> {{ answer.text }}<br>
+                    <strong>Answered by:</strong> {{ answer.customer.username }}
+                </li>
+                {% empty %}
+                <li>No answers yet.</li>
+                {% endfor %}
+            </ul>
+        </li>
+        <hr>
+        {% empty %}
+        <li>No questions available.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
