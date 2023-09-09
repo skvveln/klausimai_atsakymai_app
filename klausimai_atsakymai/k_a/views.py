@@ -9,50 +9,66 @@ from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 
-
-@login_required(login_url='user_login')
+@login_required(login_url='login')
 def question_list(request):
-    questions = Question.objects.all()
+    unanswered_questions = Question.objects.filter(answers__isnull=True).order_by('-pk')  # Newest first
+    answered_questions = Question.objects.filter(answers__isnull=False).order_by('-pk')  # Newest first
     ask_question_form = AskQuestionForm()
+    answer_question_form = AnswerQuestionForm()
 
     if request.method == 'POST':
-        form = AskQuestionForm(request.POST)
-        if form.is_valid():
-            question_text = form.cleaned_data['question_text']
-            new_question = Question.objects.create(
-                customer=request.user if request.user.is_authenticated else None,
-                text=question_text
-            )
-            return redirect('question_list')
-    else:
-        form = AskQuestionForm()
-    return render(request, 'question_list.html', {'questions': questions, 'ask_question_form': form})
+        if 'ask_question' in request.POST:
+            ask_question_form = AskQuestionForm(request.POST)
+            if ask_question_form.is_valid():
+                ask_question = ask_question_form.save(commit=False)
+                ask_question.customer = request.user
+                ask_question.save()
+                return redirect('question_list')
+        elif 'answer_question' in request.POST:
+            answer_question_form = AnswerQuestionForm(request.POST)
+            if answer_question_form.is_valid():
+                answer = answer_question_form.save(commit=False)
+                answer.customer = request.user
+                question_id = request.POST.get('question')
+                if question_id:
+                    question = Question.objects.get(pk=question_id)
+                    answer.question = question
+                    question.is_answered = True
+                    question.save()
+                answer.save()
+                return redirect('question_list')
+
+    return render(request, 'question_list.html', {
+        'unanswered_questions': unanswered_questions,
+        'answered_questions': answered_questions,
+        'ask_question_form': ask_question_form,
+        'answer_question_form': answer_question_form,
+    })
 
 
-def ask_question(request):
-    if request.method == 'POST':
-        form = AskQuestionForm(request.POST)
-        if form.is_valid():
-            question_text = form.cleaned_data['question_text']
-            new_question = Question.objects.create(customer=request.user, text=question_text)
-            return redirect('question_list')
-    else:
-        form = AskQuestionForm()
-
-    return render(request, 'ask_question.html', {'form': form})
-
-
+@login_required(login_url='login')
 def answer_question(request):
     if request.method == 'POST':
-        form = AnswerQuestionForm(request.POST)
-        if form.is_valid():
-            question = form.cleaned_data['question']
-            answer_text = form.cleaned_data['answer_text']
-            new_answer = Answer.objects.create(customer=request.user, question=question, text=answer_text)
-            return redirect('question_list')
-    else:
-        form = AnswerQuestionForm()
-    return render(request, 'answer_question.html', {'form': form})
+        answer_question_form = AnswerQuestionForm(request.POST)
+        if answer_question_form.is_valid():
+            answer = answer_question_form.save(commit=False)
+            answer.customer = request.user
+
+            # Get the question ID from the form
+            question_id = request.POST.get('question')
+            if question_id:
+                question = Question.objects.get(pk=question_id)
+                answer.question = question  # Associate the answer with the question
+                question.is_answered = True  # Mark the question as answered
+                question.save()
+
+            answer.save()
+
+            return redirect('question_list')  # Redirect on success
+
+    return redirect('question_list')
+
+
 
 def register(request):
     if request.method == "POST":
@@ -85,3 +101,4 @@ def user_login(request):
             return render(request, "login.html", {"error_message": "Login failed. Please check your credentials."})
 
     return render(request, "login.html")
+

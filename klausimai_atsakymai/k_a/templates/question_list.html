@@ -3,49 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <title>Q & A</title>
+    <style>
+        /* General table style */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 4px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        /* Style for each table container */
+        .table-container {
+            width: 45%; /* Adjust the width as needed */
+            margin: 20px 2.5%; /* Add spacing around tables */
+            vertical-align: middle; /* Align tables in the middle */
+            display: inline-block;
+            box-sizing: border-box; /* Ensure padding and border are included in width */
+        }
+
+        /* Style for the answer-list */
+        .answer-list {
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        /* Center content on the page */
+        body {
+            text-align: center;
+        }
+
+        /* Clearfix to prevent collapsing container height */
+        .clearfix::after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+
+        /* Clear additional margin for the last table container */
+        .table-container:last-child {
+            margin-right: 0;
+        }
+    </style>
 </head>
 <body>
     <nav>
         {% if user.is_authenticated %}
-            <p>Welcome, {{ user.username }}!</p>
-            <a href="{% url 'logout' %}">Sign Out</a>
+            <p>Labas, {{ user.username }}!</p>
+            <a href="{% url 'logout' %}">Atsijungti</a>
         {% else %}
-            <a href="{% url 'login' %}">Login</a>
-            <a href="{% url 'register' %}">Register</a>
+            <a href="{% url 'login' %}">Prisijungti</a>
+            <a href="{% url 'register' %}">Registruotis</a>
         {% endif %}
     </nav>
 
-    <h1>Ask a Question</h1>
-    <form method="post">
-        {% csrf_token %}
-        {{ ask_question_form.as_p }}
-        <button type="submit">Ask</button>
-    </form>
+<h1>Klausti klausimo</h1>
+<form method="post">
+    {% csrf_token %}
+    <label for="{{ ask_question_form.text.id_for_label }}"></label>
+    <textarea name="text" rows="1" cols="50" required placeholder="Įveskite klausimą"></textarea>
+    <button type="submit" name="ask_question">Klausti</button>
+</form>
 
-    <h1>Question List</h1>
-    <ul>
-        {% for question in questions %}
-            <li>
-                <strong>Question:</strong> {{ question.text }}<br>
-                <strong>Asked by:</strong> {{ question.customer.username }}<br>
-                <strong>Answers:</strong>
-                <ul>
-                    {% for answer in question.answer_set.all %}
-                        <li>
-                            <strong>Answer:</strong> {{ answer.text }}<br>
-                            <strong>Answered by:</strong> {{ answer.customer.username }}
-                        </li>
-                    {% empty %}
-                        <li>No answers yet.</li>
-                    {% endfor %}
-                </ul>
-            </li>
-        {% empty %}
-            <li>No questions available.</li>
-        {% endfor %}
-    </ul>
+    <h1>Klausimų sąrašas</h1>
+
+    <!-- Unanswered Questions Table -->
+    <div class="table-container">
+        <h2>Nauji klausimai</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Klausimas</th>
+                    <th>Klausė</th>
+                    <th>Atsakyti</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for question in unanswered_questions %}
+                    <tr>
+                        <td>{{ question.text }}</td>
+                        <td>{{ question.customer.username }}</td>
+                        <td>
+                            <ul class="answer-list">
+                                {% for answer in question.answer_set.all %}
+
+                                        <strong>Answer:</strong> {{ answer.text }}<br>
+                                        <strong>Answered by:</strong> {{ answer.customer.username }}
+
+                                {% empty %}
+                                {% endfor %}
+                            </ul>
+                            {% if user.is_authenticated %}
+                                <form method="post" action="{% url 'answer_question' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="question" value="{{ question.id }}">
+                                    <label for="answer_text"></label>
+                                    <textarea name="text" rows="1" cols="50" required placeholder="Įveskite atsakymą"></textarea><br>
+                                    <button type="submit">Atsakyti</button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="3">Šiuo metu aktyvių klausimų nėra.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Answered Questions Table -->
+    <div class="table-container">
+        <h2>Atsakyti klausimai</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Klausimas</th>
+                    <th>Klausė</th>
+                    <th>Atsakė</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for question in answered_questions %}
+                    <tr>
+                        <td>{{ question.text }}</td>
+                        <td>{{ question.customer.username }}</td>
+                        <td>
+                            {% if question.answers.all %}
+                                <ul class="answer-list">
+                                    {% for answer in question.answers.all %}
+                                            <strong>Atsakymas:</strong> {{ answer.text }}<br>
+                                            <strong>Atsakė:</strong> {{ answer.customer.username }}
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p>No answers yet.</p>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="3">Atsakytų klausimų nėra.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Clearfix to prevent collapsing container height -->
+    <div class="clearfix"></div>
 </body>
 </html>
-
-
-

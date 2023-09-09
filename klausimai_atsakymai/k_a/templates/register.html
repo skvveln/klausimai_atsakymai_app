@@ -3,25 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <title>Registration</title>
+    <style>
+        /* General table style */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 4px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        /* Style for each table container */
+        .table-container {
+            width: 45%; /* Adjust the width as needed */
+            margin: 20px 2.5%; /* Add spacing around tables */
+            vertical-align: middle; /* Align tables in the middle */
+            display: inline-block;
+            box-sizing: border-box; /* Ensure padding and border are included in width */
+        }
+
+        /* Style for the answer-list */
+        .answer-list {
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        /* Center content on the page */
+        body {
+            text-align: center;
+        }
+
+        /* Clearfix to prevent collapsing container height */
+        .clearfix::after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+
+        /* Clear additional margin for the last table container */
+        .table-container:last-child {
+            margin-right: 0;
+        }
+
+        /* Center-align login form */
+        .login-container {
+            text-align: left; /* Reset text alignment for form elements */
+            display: inline-block; /* Keep the container inline-block */
+        }
+
+        .login-form, .register-form {
+            width: 50%; /* Adjust the width as needed */
+            margin: 0 auto; /* Center-align the container */
+        }
+
+        /* Style for form labels and input fields */
+        .login-form label, .login-form input, .register-form label, .register-form input {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* Style for the login and register buttons */
+        .login-form button, .register-form button {
+            background-color: #007bff; /* Blue color for the button */
+            color: white; /* White text color */
+            padding: 10px 20px; /* Padding for the button */
+            border: none; /* Remove border */
+            cursor: pointer; /* Add pointer cursor on hover */
+        }
+
+        /* Style for the register link */
+        .register-link {
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-    <h2>Registration</h2>
+    <nav>
+        {% if user.is_authenticated %}
+            <p>Labas, {{ user.username }}!</p>
+            <a href="{% url 'logout' %}">Atsijungti</a>
+        {% else %}
+        {% endif %}
+    </nav>
 
-    {% if error_message %}
-        <p class="error">{{ error_message }}</p>
-    {% endif %}
+    <div class="login-container">
+        <div class="register-form">
+            <h2>Registruotis</h2>
 
-    <form method="post" action="{% url 'register' %}">
-        {% csrf_token %}
-        <label for="username">Username:</label>
-        <input type="text" name="username" required><br>
-        <label for="password">Password:</label>
-        <input type="password" name="password" required><br>
-        <label for="password2">Confirm Password:</label>
-        <input type="password" name="password2" required><br>
-        <button type="submit">Register</button>
-    </form>
+            {% if error_message %}
+                <p class="error">{{ error_message }}</p>
+            {% endif %}
 
-    <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+            <form method="post" action="{% url 'register' %}">
+                {% csrf_token %}
+                <label for="username">Vardas:</label>
+                <input type="text" name="username" required><br>
+                <label for="password">Slaptažodis:</label>
+                <input type="password" name="password" required><br>
+                <label for="password2">Patvirtinkite slaptažodį:</label>
+                <input type="password" name="password2" required><br>
+                <button type="submit">Registruotis</button>
+            </form>
+
+            <p class="register-link"><a href="{% url 'login' %}">Užsiregistravęs?</a></p>
+        </div>
+    </div>
 </body>
 </html>
