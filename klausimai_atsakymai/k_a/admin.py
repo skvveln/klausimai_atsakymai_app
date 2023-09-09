@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from klausimai_atsakymai.k_a.models import Question, Answer
+from .models import Question, Answer
 
 # Register your models here.
 

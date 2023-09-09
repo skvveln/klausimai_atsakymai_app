@@ -2,31 +2,46 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Question List</title>
+    <title>Q & A</title>
 </head>
 <body>
+    <nav>
+        {% if user.is_authenticated %}
+            <p>Welcome, {{ user.username }}!</p>
+            <a href="{% url 'logout' %}">Sign Out</a>
+        {% else %}
+            <a href="{% url 'login' %}">Login</a>
+            <a href="{% url 'register' %}">Register</a>
+        {% endif %}
+    </nav>
+
+    <h1>Ask a Question</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ ask_question_form.as_p }}
+        <button type="submit">Ask</button>
+    </form>
+
     <h1>Question List</h1>
     <ul>
         {% for question in questions %}
-        <li>
-            <strong>Question:</strong> {{ question.text }}<br>
-            <strong>Asked by:</strong> {{ question.customer.username }}<br>
-            <strong>Answers:</strong>
-            <ul>
-                {% for answer in question.answer_set.all %}
-                <li>
-                    <strong>Answer:</strong> {{ answer.text }}<br>
-                    <strong>Answered by:</strong> {{ answer.customer.username }}
-                </li>
-                {% empty %}
-                <li>No answers yet.</li>
-                {% endfor %}
-            </ul>
-        </li>
-        <hr>
+            <li>
+                <strong>Question:</strong> {{ question.text }}<br>
+                <strong>Asked by:</strong> {{ question.customer.username }}<br>
+                <strong>Answers:</strong>
+                <ul>
+                    {% for answer in question.answer_set.all %}
+                        <li>
+                            <strong>Answer:</strong> {{ answer.text }}<br>
+                            <strong>Answered by:</strong> {{ answer.customer.username }}
+                        </li>
+                    {% empty %}
+                        <li>No answers yet.</li>
+                    {% endfor %}
+                </ul>
+            </li>
         {% empty %}
-        <li>No questions available.</li>
+            <li>No questions available.</li>
         {% endfor %}
     </ul>
 </body>
