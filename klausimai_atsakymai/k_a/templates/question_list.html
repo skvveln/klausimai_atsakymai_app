@@ -54,15 +54,18 @@
     </style>
 </head>
 <body>
-    <nav>
-        {% if user.is_authenticated %}
-            <p>Labas, {{ user.username }}!</p>
-            <a href="{% url 'logout' %}">Atsijungti</a>
-        {% else %}
-            <a href="{% url 'login' %}">Prisijungti</a>
-            <a href="{% url 'register' %}">Registruotis</a>
-        {% endif %}
-    </nav>
+<nav>
+    {% if user.is_authenticated %}
+        <p>Labas, {{ user.username }}!</p>
+        <p>Užduota klausimų: {{ user.question_set.count }}</p>
+        <p>Atsakyta klausimų: {{ user_questions_answered }}</p>
+        <a href="{% url 'logout' %}">Atsijungti</a>
+    {% else %}
+        <a href="{% url 'login' %}">Prisijungti</a>
+        <a href="{% url 'register' %}">Registruotis</a>
+    {% endif %}
+</nav>
+
 
 <h1>Klausti klausimo</h1>
 <form method="post">
@@ -128,7 +131,7 @@
                 <tr>
                     <th>Klausimas</th>
                     <th>Klausė</th>
-                    <th>Atsakė</th>
+                    <th>Atsakymas</th>
                 </tr>
             </thead>
             <tbody>

@@ -38,12 +38,22 @@ def question_list(request):
                 answer.save()
                 return redirect('question_list')
 
+    # Count user-specific questions
+    user_questions_asked = Question.objects.filter(customer=request.user).count()
+
+    # Count user-specific answers (answers provided by the user)
+    user_answers = Answer.objects.filter(customer=request.user)
+    user_questions_answered = user_answers.count()
+
     return render(request, 'question_list.html', {
         'unanswered_questions': unanswered_questions,
         'answered_questions': answered_questions,
         'ask_question_form': ask_question_form,
         'answer_question_form': answer_question_form,
+        'user_questions_asked': user_questions_asked,
+        'user_questions_answered': user_questions_answered,
     })
+
 
 
 @login_required(login_url='login')
